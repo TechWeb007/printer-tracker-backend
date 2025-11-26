@@ -17,13 +17,12 @@ export async function POST(req: Request) {
       where: { name: customerName || "Unknown" },
     });
 
-    if (!customer) {
-      customer = await prisma.customer.create({
-        data: {
-          name: customerName || "Unknown",
-        },
-      });
-    }
+if (!customer) {
+  return NextResponse.json(
+    { error: "Customer does not exist. You must create customer first." },
+    { status: 400 }
+  );
+}
 
     // Create the printer
     const printer = await prisma.printer.create({
