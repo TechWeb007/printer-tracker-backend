@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("DATABASE_URL")
+}
+
+
+model Customer {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String?
+  phone     String?
+  printers  Printer[]
+
+  customerCode String @unique
+}
+
+
+model Printer {
+  id         Int       @id @default(autoincrement())
+  stickerId  String    @unique
+  brand      String
+  model      String
+  customerId Int
+  customer   Customer  @relation(fields: [customerId], references: [id])
+
+  statusHistory PrinterStatusHistory[]
+  inkRequests   InkRequest[]
+  tickets       ServiceTicket[]
+}
+
+model PrinterStatusHistory {
+  id        Int      @id @default(autoincrement())
+  printerId Int
+  recordedAt DateTime @default(now())
+
+  blackLevel   Int?
+  cyanLevel    Int?
+  magentaLevel Int?
+  yellowLevel  Int?
+  pageCount    Int?
+
+  printer Printer @relation(fields: [printerId], references: [id])
+}
+
+model InkRequest {
+  id        Int      @id @default(autoincrement())
+  printerId Int
+  createdAt DateTime @default(now())
+  status    String   @default("new")
+  cartridgeType String?
+  quantity  Int?     @default(1)
+
+  printer Printer @relation(fields: [printerId], references: [id])
+}
+
+model ServiceTicket {
+  id        Int      @id @default(autoincrement())
+  printerId Int
+  createdAt DateTime @default(now())
+  status    String   @default("open")
+  problemDescription String
+
+  printer Printer @relation(fields: [printerId], references: [id])
+}
